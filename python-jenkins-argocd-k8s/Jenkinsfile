@@ -3,7 +3,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_TAG    = "${BUILD_NUMBER}"
         DOCKER_IMAGE = "rengarajf5/cicd-e2e"
     }
 
@@ -11,8 +11,9 @@ pipeline {
 
         stage('Checkout App Code') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/renga8680/demo-devops-project.git'
+                git credentialsId: 'github-creds',
+                    url: 'https://github.com/renga8680/python-devops.git',
+                    branch: 'main'
             }
         }
 
@@ -58,9 +59,15 @@ pipeline {
                     rm -rf cicd-demo-manifests-repo
                     git clone https://github.com/renga8680/cicd-demo-manifests-repo.git
                     cd cicd-demo-manifests-repo
+
                     sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|" deploy.yaml
+
+                    git config user.email "jenkins@local"
+                    git config user.name "jenkins"
+
                     git add deploy.yaml
                     git commit -m "Update image tag to ${IMAGE_TAG}"
+
                     git push https://${GIT_USER}:${GIT_TOKEN}@github.com/renga8680/cicd-demo-manifests-repo.git main
                     '''
                 }
