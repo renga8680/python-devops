@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout App Code') {
             steps {
                 git credentialsId: 'github-creds',
-                    url: 'https://github.com/renga8680/python-devops-clean.git',
+                    url: 'https://github.com/renga8680/python-devops.git',
                     branch: 'master'
             }
         }
