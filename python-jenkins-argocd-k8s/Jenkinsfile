@@ -51,21 +51,27 @@ pipeline {
             }
         }
 
-        stage('Update deploy.yaml in SAME repo') {
-            steps {
-                sh '''
-                sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|" \
-                python-jenkins-argocd-k8s/deploy/deploy.yaml
+   stage('Update deploy.yaml in SAME repo') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'github-creds',
+            usernameVariable: 'GIT_USER',
+            passwordVariable: 'GIT_TOKEN'
+        )]) {
+            sh '''
+            sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|" python-jenkins-argocd-k8s/deploy/deploy.yaml
 
-                git config user.email "jenkins@local"
-                git config user.name "jenkins"
+            git config user.email "jenkins@local"
+            git config user.name "jenkins"
 
-                git add python-jenkins-argocd-k8s/deploy/deploy.yaml
-                git commit -m "Update image to ${IMAGE_TAG}" || echo "No changes to commit"
+            git add python-jenkins-argocd-k8s/deploy/deploy.yaml
+            git commit -m "Update image to ${IMAGE_TAG}" || echo "No changes"
 
-                git push origin master
-                '''
-            }
+            git push https://${GIT_USER}:${GIT_TOKEN}@github.com/renga8680/python-devops.git master
+            '''
         }
+    }
+}
+
     }
 }
