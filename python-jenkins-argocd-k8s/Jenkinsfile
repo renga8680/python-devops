@@ -21,7 +21,10 @@ pipeline {
             steps {
                 sh '''
                 echo "Building Docker Image"
-                docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+                docker build \
+                  -t ${DOCKER_IMAGE}:${IMAGE_TAG} \
+                  -f python-jenkins-argocd-k8s/Dockerfile \
+                  python-jenkins-argocd-k8s
                 '''
             }
         }
@@ -66,7 +69,7 @@ pipeline {
                     git config user.name "jenkins"
 
                     git add deploy.yaml
-                    git commit -m "Update image tag to ${IMAGE_TAG}"
+                    git commit -m "Update image tag to ${IMAGE_TAG}" || echo "No changes to commit"
 
                     git push https://${GIT_USER}:${GIT_TOKEN}@github.com/renga8680/cicd-demo-manifests-repo.git master
                     '''
