@@ -20,6 +20,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
+                echo "Building Docker Image"
                 docker build \
                   -t ${DOCKER_IMAGE}:${IMAGE_TAG} \
                   -f python-jenkins-argocd-k8s/Dockerfile \
@@ -50,18 +51,18 @@ pipeline {
             }
         }
 
-        stage('Update K8S Manifest Repo') {
+        stage('Update deploy.yaml in SAME repo') {
             steps {
-                git credentialsId: 'github-creds',
-                    url: 'https://github.com/renga8680/cicd-demo-manifests-repo.git',
-                    branch: 'master'
-
                 sh '''
-                sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|" deploy.yaml
+                sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|" \
+                python-jenkins-argocd-k8s/deploy/deploy.yaml
+
                 git config user.email "jenkins@local"
                 git config user.name "jenkins"
-                git add deploy.yaml
-                git commit -m "Update image tag to ${IMAGE_TAG}" || echo "No changes"
+
+                git add python-jenkins-argocd-k8s/deploy/deploy.yaml
+                git commit -m "Update image to ${IMAGE_TAG}" || echo "No changes to commit"
+
                 git push origin master
                 '''
             }
